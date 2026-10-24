@@ -1,0 +1,36 @@
+name: Build nationwide ZIP broadband trends
+on:
+  push:
+    branches: [broadband-intelligence-extraction]
+    paths: ['.github/workflows/broadband-zcta-aggregation.yml']
+  workflow_dispatch:
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install geographic dependencies
+        run: pip install 'h3>=4,<5' 'geopandas>=1.0,<2' 'shapely>=2,<3' 'numpy>=2,<3'
+      - name: Download verified national layer 5
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p data/source
+          gh run download 40062943999 --repo gamblerspassion/Stance --name national-fcc-layer-5 --dir data/source
+          test -s data/source/layer5_COMPLETE_manifest.json
+      - name: Generate nationwide ZCTA coverage profiles and audit
+        run: |
+          python -u broadband-intelligence/h3_to_zip.py --input data/source --output data/zip_analytics --batch 25000
+      - name: Archive ZIP summaries
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: national-zcta-broadband-coverage-history
+          path: data/zip_analytics/
+          compression-level: 1
+          retention-days: 30
+          if-no-files-found: warn
