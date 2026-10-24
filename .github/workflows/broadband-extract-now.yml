@@ -1,0 +1,49 @@
+name: Extract real FCC ArcGIS records
+on:
+  push:
+    branches: [broadband-intelligence-extraction]
+    paths:
+      - '.github/workflows/broadband-extract-now.yml'
+  workflow_dispatch:
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify ArcGIS live source schemas
+        run: |
+          python broadband-intelligence/arcgis_extract.py inspect --layer 5
+          python broadband-intelligence/arcgis_extract.py inspect --layer 6
+      - name: Extract 30 batches of H3 coverage (layer 5)
+        run: python broadband-intelligence/arcgis_extract.py extract --layer 5 --db data/arcgis.sqlite --batch 1000 --max-pages 30
+      - name: Extract 30 batches of provider H3 network rows (layer 6)
+        run: python broadband-intelligence/arcgis_extract.py extract --layer 6 --db data/arcgis.sqlite --batch 1000 --max-pages 30
+      - name: Export extracted CSV records
+        if: always()
+        run: |
+          if test -f data/arcgis.sqlite; then
+            python broadband-intelligence/arcgis_extract.py export --layer 5 --db data/arcgis.sqlite --output data/fcc_h3_coverage_extracted.csv
+            python broadband-intelligence/arcgis_extract.py export --layer 6 --db data/arcgis.sqlite --output data/fcc_h3_provider_networks_extracted.csv
+            python - <<'PY'
+          import csv, json, sqlite3
+          with sqlite3.connect('data/arcgis.sqlite') as db:
+              by_layer = [dict(layer=l,count=c,max_oid=o) for l,c,o in db.execute('select layer,count(*),max(oid) from records group by layer')]
+          with open('data/extraction_manifest.json','w') as f:
+              json.dump({'source':'FCC/Esri ArcGIS H3 Resolution 8','scope':'bounded first 30,000 source rows per layer, NOT national completion','layers':by_layer},f,indent=2)
+          print(by_layer)
+          PY
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: arcgis-h3-real-extraction
+          path: |
+            data/fcc_h3_coverage_extracted.csv
+            data/fcc_h3_provider_networks_extracted.csv
+            data/extraction_manifest.json
+          if-no-files-found: warn
+          retention-days: 14
