@@ -1,0 +1,6 @@
+# Large extracted datasets and database journal files
+/data/
+/broadband-intelligence/data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
