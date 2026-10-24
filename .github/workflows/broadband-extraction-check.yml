@@ -1,0 +1,20 @@
+name: Broadband extraction code validation
+on:
+  push:
+    branches: [broadband-intelligence-extraction]
+    paths:
+      - 'broadband-intelligence/**'
+      - '.github/workflows/broadband-extraction-check.yml'
+  workflow_dispatch:
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compile extractor
+        run: python -m py_compile broadband-intelligence/arcgis_extract.py
+      - name: Validate CLI
+        run: python broadband-intelligence/arcgis_extract.py --help
