@@ -1,0 +1,31 @@
+name: National FCC ArcGIS extraction
+on:
+  push:
+    branches: [broadband-intelligence-extraction]
+    paths: ['.github/workflows/national-fcc-extract.yml']
+  workflow_dispatch:
+jobs:
+  extract:
+    strategy:
+      fail-fast: false
+      matrix:
+        layer: [5, 6]
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Extract and verify all records
+        run: |
+          python -u broadband-intelligence/full_extract.py --layer ${{ matrix.layer }} --workers 8 --batch 16000 --partition-size 1000000 --output data/national
+      - name: Upload full layer data
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: national-fcc-layer-${{ matrix.layer }}
+          path: data/national/layer${{ matrix.layer }}/
+          compression-level: 0
+          retention-days: 14
+          if-no-files-found: warn
