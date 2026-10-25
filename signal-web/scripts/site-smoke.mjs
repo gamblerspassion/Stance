@@ -60,8 +60,9 @@ await scenario('Interactive map actually initializes, renders basemap tiles and 
  await page.locator('.leaflet-container').waitFor({timeout:15000});
  await page.waitForFunction(()=>document.querySelectorAll('.leaflet-tile-loaded').length>0,{timeout:25000});
  const tileCount=await page.locator('.leaflet-tile-loaded').count();
- let outlineStatus='not available';
- try{await page.waitForSelector('.signal-map .leaflet-interactive',{timeout:15000});outlineStatus='rendered'}catch(e){}
+ await page.waitForFunction(()=>document.querySelector('#signal-map')?.dataset.boundaryZip==='45202'&&document.querySelector('#signal-map')?.dataset.boundaryStatus==='rendered',{timeout:25000});
+ const outlineStatus='rendered';
+ const count=await page.locator('#signal-map .leaflet-interactive').count();if(count<1)throw Error('GeoJSON polygon not rendered');
  const box=await page.locator('#signal-map').boundingBox();
  if(!box||box.width<700||tileCount===0)throw Error('Real map did not load');
  await page.locator('.leaflet-control-zoom-in').click();
