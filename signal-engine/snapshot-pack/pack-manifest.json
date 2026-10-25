@@ -1,0 +1,10 @@
+{
+  "archive_sha256": "b35ea2be4f44210c2c8b015722e60976ac524fee442c30510fddd38b9aba6989",
+  "archive_bytes": 6227019,
+  "base64_length": 8302692,
+  "part_count": 28,
+  "part_characters": 300000,
+  "expected_market_count": 41721,
+  "expected_website_routes": 69803,
+  "gzip_tar_file": "signal-v1.tar.gz"
+}

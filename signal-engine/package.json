@@ -1,0 +1,1 @@
+{"name":"signal-market-engine","private":true,"type":"module","version":"1.0.0","scripts":{"test":"node --test tests/*.test.mjs","build-data":"python3 scripts/build_engine.py","demo":"node src/cli.mjs zip 45202"},"engines":{"node":">=20"}}

@@ -1,0 +1,36 @@
+name: SIGNAL Market Engine (gamblerspassion)
+on:
+  push:
+    branches: [signal-market-engine-ci-20261025]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out pinned SIGNAL source
+        uses: actions/checkout@v4
+        with:
+          repository: independentsalesnmarketing/zipper
+          ref: e509d3297603edcdb3af7b2e3b8cbd65dc32f714
+          persist-credentials: false
+      - name: Prepare Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Unpack national snapshot and validate archive checksum
+        working-directory: signal-engine
+        run: python3 scripts/unpack_snapshot.py
+      - name: Audit national markets and existing website routes
+        working-directory: signal-engine
+        run: python3 scripts/audit_snapshot.py
+      - name: Run 14 backend tests and HTTP API integration tests
+        working-directory: signal-engine
+        run: npm test
+      - name: Smoke test market CLI
+        working-directory: signal-engine
+        run: |
+          node src/cli.mjs zip 45202 > /dev/null
+          node src/cli.mjs zip 32303 > /dev/null
