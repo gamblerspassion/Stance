@@ -111,6 +111,7 @@ import Base from '@layouts/Base.astro';
   function initMap(){if(!window.L){setTimeout(initMap,100);return}map=L.map('signal-map',{zoomControl:true,worldCopyJump:false}).setView([38.9,-98.5],4);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Imagery © Esri'}).addTo(map);
     L.tileLayer('https://basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png',{maxZoom:16,attribution:'Labels © CARTO'}).addTo(map);
+    if(chosenZip)outline(chosenZip);
     map.on('click',async e=>{if(map.getZoom()<7){map.setView(e.latlng,8);return}const u='https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/84/query?geometry='+encodeURIComponent(e.latlng.lng+','+e.latlng.lat)+'&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&where=1%3D1&outFields=GEOID&returnGeometry=false&f=json';try{const r=await fetch(u,{signal:AbortSignal.timeout(9000)}),a=await r.json();const zip=a.features?.[0]?.attributes?.GEOID;if(zip)selectZip(zip)}catch(err){console.warn('Map geographic lookup failed',err)}});
   }
   initMap();const p=new URLSearchParams(location.search);if(/^\d{5}$/.test(p.get('zip')||''))selectZip(p.get('zip'));else if(p.get('city'))selectCity(p.get('city'));
