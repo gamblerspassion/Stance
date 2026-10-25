@@ -2,20 +2,19 @@ name: SIGNAL Market Engine (gamblerspassion)
 on:
   push:
     branches: [signal-market-engine-ci-20261025]
+    paths:
+      - 'signal-engine/**'
+      - '.github/workflows/signal-market-engine-ci.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
-      - name: Check out pinned SIGNAL source
+      - name: Checkout actual gamblerspassion branch
         uses: actions/checkout@v4
-        with:
-          repository: independentsalesnmarketing/zipper
-          ref: e509d3297603edcdb3af7b2e3b8cbd65dc32f714
-          persist-credentials: false
       - name: Prepare Node.js 22
         uses: actions/setup-node@v4
         with:
@@ -26,11 +25,16 @@ jobs:
       - name: Audit national markets and existing website routes
         working-directory: signal-engine
         run: python3 scripts/audit_snapshot.py
-      - name: Run 14 backend tests and HTTP API integration tests
+      - name: Run backend unit and API integration tests
         working-directory: signal-engine
         run: npm test
-      - name: Smoke test market CLI
+      - name: Prove full national inventory, endpoints and performance
         working-directory: signal-engine
-        run: |
-          node src/cli.mjs zip 45202 > /dev/null
-          node src/cli.mjs zip 32303 > /dev/null
+        run: node scripts/prove_engine.mjs
+      - name: Upload proof reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signal-proof-${{ github.run_id }}
+          path: signal-engine/proof-output/
+          if-no-files-found: warn
