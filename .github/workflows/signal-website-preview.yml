@@ -1,0 +1,72 @@
+name: SIGNAL on real Internet 4 ALL website
+on:
+  push:
+    branches: [signal-market-engine-ci-20261025]
+    paths:
+      - 'signal-web/**'
+      - '.github/workflows/signal-website-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout SIGNAL development assets from gamblerspassion
+        uses: actions/checkout@v4
+      - name: Checkout actual Internet 4 ALL Astro website
+        uses: actions/checkout@v4
+        with:
+          repository: independentsalesnmarketing/zipper
+          ref: e509d3297603edcdb3af7b2e3b8cbd65dc32f714
+          path: web-preview
+          persist-credentials: false
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install actual Astro website dependencies
+        working-directory: web-preview
+        run: npm ci --no-audit --no-fund
+      - name: Overlay map-first SIGNAL page without touching production
+        run: |
+          cp signal-web/src/pages/signal-preview.astro web-preview/src/pages/signal-preview.astro
+          cp signal-web/scripts/site-smoke.mjs web-preview/signal-site-smoke.mjs
+      - name: Expand full national SIGNAL database into website public assets
+        run: python3 signal-engine/scripts/unpack_snapshot.py --public web-preview/public/data/signal/v1
+      - name: Verify website can serve real ZIP and route shards
+        run: |
+          test -f web-preview/public/data/signal/v1/zip/45.json
+          test -f web-preview/public/data/signal/v1/zip/32.json
+          test -f web-preview/public/data/signal/v1/cities.json
+          test -f web-preview/public/data/signal/v1/providers.json
+      - name: Install browser test tools
+        working-directory: web-preview
+        run: |
+          npm install --no-save --no-package-lock playwright@1.58.2
+          npx playwright install --with-deps chromium
+      - name: Launch actual Astro site and run end-to-end map, city, ZIP and mobile tests
+        working-directory: web-preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx astro dev --host 127.0.0.1 --port 4321 > /tmp/signal-astro.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 120); do
+            if curl -fsS http://127.0.0.1:4321/signal-preview/ > /dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS -o /dev/null http://127.0.0.1:4321/signal-preview/
+          node signal-site-smoke.mjs
+      - name: Upload website and map proof screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signal-website-proof-${{ github.run_id }}
+          path: signal-evidence/
+          if-no-files-found: warn
+      - name: Print development server log if failed
+        if: failure()
+        run: tail -180 /tmp/signal-astro.log || true
