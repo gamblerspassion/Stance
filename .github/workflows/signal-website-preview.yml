@@ -29,10 +29,14 @@ jobs:
       - name: Install actual Astro website dependencies
         working-directory: web-preview
         run: npm ci --no-audit --no-fund
+      - name: Download and validate official Census ZCTA polygons
+        run: node signal-web/scripts/build-boundaries.mjs 45202 32303 98004 00601
       - name: Overlay map-first SIGNAL page without touching production
         run: |
           mv postcss.config.mjs /tmp/stance-parent-postcss-config.mjs
           cp signal-web/src/pages/signal-preview.astro web-preview/src/pages/signal-preview.astro
+          mkdir -p web-preview/public/data/signal/boundaries
+          cp signal-web/generated/boundaries/*.geojson web-preview/public/data/signal/boundaries/
           cp signal-web/scripts/site-smoke.mjs web-preview/signal-site-smoke.mjs
       - name: Expand full national SIGNAL database into website public assets
         run: python3 signal-engine/scripts/unpack_snapshot.py --public web-preview/public/data/signal/v1
@@ -66,7 +70,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: signal-website-proof-${{ github.run_id }}
-          path: signal-evidence/
+          path: |
+            signal-evidence/
+            signal-web/generated/boundaries/
           if-no-files-found: warn
       - name: Print development server log if failed
         if: failure()
