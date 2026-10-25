@@ -31,6 +31,7 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Overlay map-first SIGNAL page without touching production
         run: |
+          mv postcss.config.mjs /tmp/stance-parent-postcss-config.mjs
           cp signal-web/src/pages/signal-preview.astro web-preview/src/pages/signal-preview.astro
           cp signal-web/scripts/site-smoke.mjs web-preview/signal-site-smoke.mjs
       - name: Expand full national SIGNAL database into website public assets
@@ -54,8 +55,8 @@ jobs:
           npx astro dev --host 127.0.0.1 --port 4321 > /tmp/signal-astro.log 2>&1 &
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
-          for i in $(seq 1 120); do
-            if curl -fsS http://127.0.0.1:4321/signal-preview/ > /dev/null; then break; fi
+          for i in $(seq 1 80); do
+            if curl --max-time 10 -fsS http://127.0.0.1:4321/signal-preview/ > /dev/null; then break; fi
             sleep 2
           done
           curl -fsS -o /dev/null http://127.0.0.1:4321/signal-preview/
