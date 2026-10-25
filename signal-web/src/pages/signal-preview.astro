@@ -1,0 +1,100 @@
+---
+import Base from '@layouts/Base.astro';
+---
+<Base title="SIGNAL Market Map — Internet 4 ALL Preview" description="Interactive broadband market research by ZIP and city.">
+<section class="signal-stage" id="signal-stage">
+  <div class="signal-copy">
+    <div class="signal-eyebrow">INTERNET 4 ALL · SIGNAL MARKET INTELLIGENCE</div>
+    <h1>Find internet options <span>where you live.</span></h1>
+    <p>Search a ZIP or city, or select a place on the map. See provider networks and available ordering paths in one view.</p>
+    <form id="signal-search-form" class="signal-search">
+      <label for="signal-query" class="visually-hidden">Enter a ZIP code or city</label>
+      <input id="signal-query" type="search" placeholder="Enter ZIP or city, e.g. 45202 or Cincinnati" autocomplete="off" required />
+      <button type="submit">Explore market →</button>
+    </form>
+    <div class="signal-suggestions" id="signal-suggestions" hidden></div>
+    <div class="signal-shortcuts">
+      <button type="button" data-zip="45202">Cincinnati · 45202</button>
+      <button type="button" data-zip="32303">Tallahassee · 32303</button>
+      <button type="button" data-zip="98004">Bellevue · 98004</button>
+    </div>
+  </div>
+  <div class="signal-shell">
+    <div class="signal-map" id="signal-map" role="region" aria-label="Interactive United States broadband map"></div>
+    <div class="signal-map-badge">● SIGNAL <span>Nationwide market data</span></div>
+    <div class="signal-map-help">Tap a location or search above to explore provider coverage.</div>
+    <button type="button" id="signal-locate" class="signal-locate" title="Use my location">◎ My location</button>
+  </div>
+  <div id="signal-result" class="signal-result" aria-live="polite">
+    <p class="signal-initial">Select a location to see reported networks, technologies, and Stance program routes. No routine paid provider lookups.</p>
+  </div>
+</section>
+<style is:global>
+.signal-stage{--sig-bg:#070d1c;--sig-panel:#111a2d;--sig-line:#283959;--sig-text:#edf4ff;--sig-muted:#a8b8d0;color:var(--sig-text);background:radial-gradient(ellipse at 30% -10%,#163659 0%,#070d1c 47%);padding:28px max(20px,calc((100vw - 1420px)/2));font-family:Inter,system-ui,sans-serif}
+.signal-copy{max-width:890px;padding:23px 0 22px}.signal-eyebrow{color:#56e3c1;font-size:12px;font-weight:850;letter-spacing:.16em}.signal-copy h1{color:white;font-size:clamp(30px,4.3vw,60px);font-weight:860;letter-spacing:-.045em;line-height:1.08;margin:15px 0}.signal-copy h1 span{color:#69e8bf}.signal-copy p{max-width:700px;color:#bac8e0;font-size:16px;line-height:1.6}
+.signal-search{display:flex;gap:10px;max-width:780px;position:relative;margin-top:24px;padding:7px;border-radius:16px;border:1px solid #3b5679;background:#fff}.signal-search input{color:#172436!important;background:#fff!important;border:0!important;box-shadow:none!important;outline:none;flex:1;min-width:100px;font-size:16px;padding:12px}.signal-search button{border:0;border-radius:10px;background:#24cba6;color:#081b23;font-weight:850;padding:12px 19px;cursor:pointer;white-space:nowrap}.signal-suggestions{max-width:780px;position:absolute;z-index:1200;background:#f8fbff;color:#172436;border-radius:12px;box-shadow:0 15px 40px #0007;padding:6px}.signal-suggestions button{display:block;width:100%;text-align:left;padding:10px 13px;border:0;background:transparent;cursor:pointer;color:#18283b}.signal-suggestions button:hover{background:#e7eff7}.signal-shortcuts{display:flex;gap:9px;flex-wrap:wrap;margin-top:13px}.signal-shortcuts button{border:1px solid #4c6387;border-radius:100px;background:#1d3053a0;color:#e1efff;cursor:pointer;padding:9px 13px;font-size:12px}
+.signal-shell{height:min(60vw,520px);min-height:300px;position:relative;overflow:hidden;border-radius:22px;border:1px solid #3a547b;box-shadow:0 15px 60px #0005;background:#121b28}.signal-map{height:100%;width:100%;z-index:1}.signal-shell .leaflet-container{background:#131e30}.signal-map-badge,.signal-map-help,.signal-locate{position:absolute;z-index:800;color:#fff;background:#071323d9;border:1px solid #365474;border-radius:10px;padding:10px 13px;box-shadow:0 4px 17px #0007}.signal-map-badge{top:13px;left:13px;font-size:12px;font-weight:850;letter-spacing:.06em}.signal-map-badge span{color:#a6d4e0;font-weight:500;margin-left:8px;letter-spacing:0}.signal-map-help{left:13px;bottom:12px;font-size:12px;max-width:70%}.signal-locate{top:12px;right:12px;cursor:pointer;font-size:12px}
+.signal-result{border:1px solid #344562;border-radius:17px;background:linear-gradient(120deg,#14223c,#0b1528);padding:23px;margin-top:18px;min-height:120px}.signal-initial,.signal-hint{color:#bbcbe2}.signal-result h2{font-size:clamp(22px,3vw,34px);color:white;letter-spacing:-.03em;margin:0 0 7px}.signal-meta{color:#afc2da;margin-bottom:16px}.signal-tags{display:flex;flex-wrap:wrap;gap:8px;margin:13px 0}.signal-tag{font-size:11px;color:#d6eef6;border:1px solid #52718c;border-radius:50px;padding:6px 10px}.signal-cols{display:grid;grid-template-columns:1.4fr 1fr;gap:18px}.signal-col{border:1px solid #2a3d5c;border-radius:14px;padding:16px;background:#0a162a}.signal-col h3{margin:0 0 11px;color:#f2f7ff;font-size:17px}.signal-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #253656;padding:10px 0}.signal-provider{font-weight:760;color:#eaf6ff}.signal-desc{font-size:12px;color:#a8bdd7}.signal-pct{font-weight:850;color:#71e8c5;white-space:nowrap}.signal-actions{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0 2px}.signal-action{background:#29cea9;color:#082a28!important;border:0;border-radius:10px;padding:11px 15px;font-weight:800;display:inline-block;text-decoration:none!important}.signal-action.secondary{background:#253e60;color:#eaf3ff!important}.signal-note{color:#b8c6d9;font-size:12px;line-height:1.5;margin-top:12px}.signal-street{display:flex;gap:10px;margin-top:14px}.signal-street input{flex:1;min-width:0;padding:11px 13px;border:1px solid #4f678b;border-radius:10px;color:white;background:#14243c}.signal-street button{padding:10px 14px;border:1px solid #45ad98;border-radius:10px;background:#183c3e;color:white;cursor:pointer}.signal-network-list{color:#becde2;line-height:1.7;max-height:145px;overflow:auto;font-size:13px}.signal-loading{color:#70e9c3}.signal-error{color:#ffabab}
+@media(max-width:700px){.signal-stage{padding:14px}.signal-copy{padding:12px 2px 16px}.signal-copy h1{font-size:35px}.signal-copy p{font-size:14px}.signal-shell{height:52vh;min-height:280px;border-radius:14px}.signal-cols{grid-template-columns:1fr}.signal-search{gap:4px}.signal-search button{font-size:12px;padding:8px}.signal-map-badge span{display:none}.signal-result{padding:16px}.signal-map-help{font-size:10px}.signal-street{flex-direction:column}}
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script is:inline src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<script is:inline>
+(()=> {
+  const by=id=>document.getElementById(id);
+  const el=by('signal-result'),form=by('signal-search-form'),input=by('signal-query'),suggestions=by('signal-suggestions');
+  const base='/data/signal/v1/';
+  const memo=new Map();
+  let map,layer,chosenZip='',requestNum=0,cities,cityChoice=null;
+  const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
+  const human=s=>String(s||'').replaceAll('_',' ').replace(/\b\w/g,x=>x.toUpperCase());
+  const f=async name=>{if(!memo.has(name))memo.set(name,fetch(base+name).then(r=>{if(!r.ok)throw Error('Market data unavailable');return r.json()}).catch(e=>{memo.delete(name);throw e}));return memo.get(name)};
+  const market=async z=>(await f('zip/'+z.slice(0,2)+'.json')).markets[z]||null;
+  const rows=(arr,direct)=>arr.length?arr.map(p=>'<div class="signal-row"><div><div class="signal-provider">'+esc(human(direct?p.id:p.id))+'</div><div class="signal-desc">'+esc(direct?human(p.t)+' · provider address check':human(p.channel))+'</div></div><div class="signal-pct">'+(direct&&Number.isFinite(p.pct)?esc(p.pct.toFixed(1))+'%':'')+'</div></div>').join(''):'<p class="signal-hint">No confirmed sales program in this market.</p>';
+  const notices={door_to_door:'Field sales only',event_only:'Approved events only',wireless_first:'Wireless first, then home internet',online_phone:'Online/phone address check'};
+  async function outline(z){if(!map)return;try{
+    const url='https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/84/query?where='+encodeURIComponent("GEOID='"+z+"'")+'&outFields=GEOID&returnGeometry=true&outSR=4326&geometryPrecision=5&maxAllowableOffset=0.001&f=geojson';
+    const r=await fetch(url,{signal:AbortSignal.timeout(9000)});if(!r.ok)throw Error('Boundary unavailable');const geo=await r.json();if(!geo.features?.length)return;
+    if(layer)map.removeLayer(layer);
+    layer=window.L.geoJSON(geo,{style:{color:'#6ffff0',weight:3,opacity:1,fillColor:'#3dffe3',fillOpacity:.13}});
+    layer.addTo(map);map.fitBounds(layer.getBounds(),{padding:[25,25],maxZoom:12});
+  }catch(e){console.warn('Boundary lookup unavailable',e)}
+  }
+  function renderZip(z,m){if(!m){el.innerHTML='<p class="signal-error">This ZIP is not in the snapshot. Try a nearby market or city.</p>';return}
+    const direct=(m.direct||[]).slice().sort((a,b)=>(b.b||0)-(a.b||0));
+    const restricted=m.restricted||[];
+    const interesting=m.networks||[];
+    const area=m.city?esc(m.city)+', '+esc(m.state||''):'ZIP '+z;
+    el.innerHTML='<h2>Internet providers in '+esc(z)+'</h2><p class="signal-meta">'+area+' · '+(m.has_fcc_zcta?'FCC-reported broadband geography':'Postal market association')+'</p>'+
+      '<div class="signal-tags"><span class="signal-tag">'+interesting.length+' reporting network records</span><span class="signal-tag">'+direct.length+' direct sales options</span><span class="signal-tag">'+restricted.length+' restricted programs</span><span class="signal-tag">FCC December 2025</span></div>'+
+      '<div class="signal-cols"><section class="signal-col"><h3>Provider ordering opportunities</h3>'+rows(direct,true)+
+      (restricted.length?'<h3 style="margin-top:18px">Special programs</h3>'+rows(restricted,false):'')+
+      '<div class="signal-row"><div><div class="signal-provider">EarthLink</div><div class="signal-desc">Reseller address inquiry · '+esc(human(m.earthlink?.coverage||'unknown'))+'</div></div></div></section>'+
+      '<section class="signal-col"><h3>Reported local networks</h3><div class="signal-network-list">'+interesting.slice(0,35).map(n=>'<div>• '+esc(n.n||'Network')+' · '+esc(human(n.t))+'</div>').join('')+'</div><p class="signal-note">Networks and ZIP percentages are geographic indicators—not confirmed availability at an individual address.</p></section></div>'+
+      '<div class="signal-actions"><a class="signal-action" href="/internet-providers/zip/'+z+'/">View full '+z+' ZIP page →</a><a class="signal-action secondary" href="/check-availability?zip='+z+'">Continue to address check</a></div>'+
+      '<p class="signal-note">Available plans and install eligibility are confirmed during the provider address check. Special channel restrictions still apply.</p>';
+    chosenZip=z;document.title='Internet providers in '+z+' | SIGNAL preview';history.replaceState({},'', '/signal-preview?zip='+z);
+  }
+  async function selectZip(z){if(!/^\d{5}$/.test(z))return;const ticket=++requestNum;input.value=z;suggestions.hidden=true;el.innerHTML='<p class="signal-loading">Loading market '+esc(z)+'…</p>';
+    try{const m=await market(z);if(ticket!==requestNum)return;renderZip(z,m);if(m?.has_fcc_zcta)outline(z)}
+    catch(e){if(ticket===requestNum)el.innerHTML='<p class="signal-error">Market data could not be loaded. Please retry.</p>'}
+  }
+  async function selectCity(key){try{const all=cities||await f('cities.json');cities=all;const item=all[key];if(!item)return;const url=item.route;const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(url));const shard=Array.from(new Uint8Array(hash)).slice(0,1).map(x=>x.toString(16).padStart(2,'0')).join('');const route=(await f('routes/'+shard+'.json')).routes[url];if(!route)throw Error('city route not found');
+    const zips=route.zips||[];input.value=item.name;suggestions.hidden=true;let best=new Map(),cnt=0;for(const z of zips.slice(0,100)){const m=await market(z);if(!m)continue;cnt++;for(const p of m.direct||[]){let x=best.get(p.id)||{provider:p.id,count:0,max:0};x.count++;x.max=Math.max(x.max,p.pct||0);best.set(p.id,x)}}
+    const arr=[...best.values()].sort((a,b)=>b.count-a.count);
+    el.innerHTML='<h2>'+esc(item.name)+'</h2><p class="signal-meta">City market view · '+zips.length+' associated ZIPs</p><div class="signal-cols"><section class="signal-col"><h3>Provider footprint by associated ZIP</h3>'+arr.map(p=>'<div class="signal-row"><strong>'+esc(human(p.provider))+'</strong><span>'+p.count+' matched ZIPs</span></div>').join('')+'</section><section class="signal-col"><h3>Explore the ZIPs</h3><div class="signal-tags">'+zips.slice(0,60).map(z=>'<button class="signal-tag" data-load-zip="'+esc(z)+'">'+esc(z)+'</button>').join('')+'</div><p class="signal-note">City provider coverage summarizes associated ZIP records; ZIP percentages are not added together.</p></section></div><div class="signal-actions"><a class="signal-action" href="'+esc(url)+'">View existing city page →</a></div>';
+    el.querySelectorAll('[data-load-zip]').forEach(btn=>btn.addEventListener('click',()=>selectZip(btn.dataset.loadZip)));
+    history.replaceState({},'', '/signal-preview?city='+encodeURIComponent(key));
+  }catch(e){el.innerHTML='<p class="signal-error">Could not load this city market. Try a ZIP.</p>';console.error(e)}}
+  async function runSearch(q){q=q.trim();if(/^\d{5}$/.test(q))return selectZip(q);const all=cities||await f('cities.json');cities=all;const match=Object.values(all).find(v=>v.slug===q.toLowerCase()||v.name.toLowerCase()===q.toLowerCase())||Object.values(all).find(v=>v.name.toLowerCase().startsWith(q.toLowerCase()));if(match)return selectCity(match.slug);el.innerHTML='<p class="signal-error">No matching city found. Try entering a five-digit ZIP.</p>'}
+  input.addEventListener('input',async()=>{const q=input.value.trim().toLowerCase();if(q.length<3||/^\d/.test(q)){suggestions.hidden=true;return}try{const all=cities||await f('cities.json');cities=all;const matches=Object.values(all).filter(v=>v.name.toLowerCase().startsWith(q)||v.slug.startsWith(q)).slice(0,8);if(input.value.trim().toLowerCase()!==q)return;suggestions.innerHTML='';for(const c of matches){let b=document.createElement('button');b.type='button';b.textContent=c.name+' · '+c.slug;b.addEventListener('click',()=>selectCity(c.slug));suggestions.appendChild(b)}suggestions.hidden=!matches.length}catch{}});
+  form.addEventListener('submit',e=>{e.preventDefault();runSearch(input.value)});document.querySelectorAll('[data-zip]').forEach(btn=>btn.addEventListener('click',()=>selectZip(btn.dataset.zip)));
+  by('signal-locate').addEventListener('click',()=>{if(!navigator.geolocation)return;const button=by('signal-locate');button.textContent='Locating…';navigator.geolocation.getCurrentPosition(pos=>{map?.setView([pos.coords.latitude,pos.coords.longitude],11);button.textContent='◎ My location'},()=>{button.textContent='Location unavailable'},{timeout:9000})});
+  function initMap(){if(!window.L){setTimeout(initMap,100);return}map=L.map('signal-map',{zoomControl:true,worldCopyJump:false}).setView([38.9,-98.5],4);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Imagery © Esri'}).addTo(map);
+    L.tileLayer('https://basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}.png',{maxZoom:16,attribution:'Labels © CARTO'}).addTo(map);
+    map.on('click',async e=>{if(map.getZoom()<7){map.setView(e.latlng,8);return}const u='https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/84/query?geometry='+encodeURIComponent(e.latlng.lng+','+e.latlng.lat)+'&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&where=1%3D1&outFields=GEOID&returnGeometry=false&f=json';try{const r=await fetch(u,{signal:AbortSignal.timeout(9000)}),a=await r.json();const zip=a.features?.[0]?.attributes?.GEOID;if(zip)selectZip(zip)}catch(err){console.warn('Map geographic lookup failed',err)}});
+  }
+  initMap();const p=new URLSearchParams(location.search);if(/^\d{5}$/.test(p.get('zip')||''))selectZip(p.get('zip'));else if(p.get('city'))selectCity(p.get('city'));
+})();
+</script>
