@@ -52,13 +52,31 @@ import Base from '@layouts/Base.astro';
   const market=async z=>(await f('zip/'+z.slice(0,2)+'.json')).markets[z]||null;
   const rows=(arr,direct)=>arr.length?arr.map(p=>'<div class="signal-row"><div><div class="signal-provider">'+esc(human(direct?p.id:p.id))+'</div><div class="signal-desc">'+esc(direct?human(p.t)+' · provider address check':human(p.channel))+'</div></div><div class="signal-pct">'+(direct&&Number.isFinite(p.pct)?esc(p.pct.toFixed(1))+'%':'')+'</div></div>').join(''):'<p class="signal-hint">No confirmed sales program in this market.</p>';
   const notices={door_to_door:'Field sales only',event_only:'Approved events only',wireless_first:'Wireless first, then home internet',online_phone:'Online/phone address check'};
-  async function outline(z){if(!map)return;try{
-    const url='https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/84/query?where='+encodeURIComponent("GEOID='"+z+"'")+'&outFields=GEOID&returnGeometry=true&outSR=4326&geometryPrecision=5&maxAllowableOffset=0.001&f=geojson';
-    const r=await fetch(url,{signal:AbortSignal.timeout(9000)});if(!r.ok)throw Error('Boundary unavailable');const geo=await r.json();if(!geo.features?.length)return;
-    if(layer)map.removeLayer(layer);
-    layer=window.L.geoJSON(geo,{style:{color:'#6ffff0',weight:3,opacity:1,fillColor:'#3dffe3',fillOpacity:.13}});
-    layer.addTo(map);map.fitBounds(layer.getBounds(),{padding:[25,25],maxZoom:12});
-  }catch(e){console.warn('Boundary lookup unavailable',e)}
+  async function outline(z){
+    if(!map)return;
+    try{
+      const url='/data/signal/boundaries/'+z+'.geojson';
+      let response=await fetch(url);
+      if(!response.ok){
+        const fallback='https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/84/query?where='+encodeURIComponent("GEOID='"+z+"'")+'&outFields=GEOID,BASENAME&returnGeometry=true&outSR=4326&f=geojson';
+        response=await fetch(fallback,{signal:AbortSignal.timeout(18000)});
+      }
+      if(!response.ok)throw Error('ZCTA boundary not available for '+z);
+      const geo=await response.json();
+      if(!geo.features?.length||geo.features.some(x=>x.properties?.GEOID!==z||!['Polygon','MultiPolygon'].includes(x.geometry?.type)))throw Error('Boundary GEOID mismatch for '+z);
+      if(layer)map.removeLayer(layer);
+      layer=window.L.geoJSON(geo,{style:{color:'#6ffff0',weight:3,opacity:1,fillColor:'#3dffe3',fillOpacity:.13}});
+      layer.addTo(map);
+      if(!layer.getBounds().isValid())throw Error('Empty boundary bounds for '+z);
+      map.fitBounds(layer.getBounds(),{padding:[25,25],maxZoom:12});
+      const host=by('signal-map');
+      host.dataset.boundaryZip=z;
+      host.dataset.boundaryStatus='rendered';
+      host.dataset.boundarySource='Census 2020 ZCTA';
+    }catch(e){
+      by('signal-map').dataset.boundaryStatus='unavailable';
+      console.warn('Census ZCTA boundary lookup failed',e);
+    }
   }
   function renderZip(z,m){if(!m){el.innerHTML='<p class="signal-error">This ZIP is not in the snapshot. Try a nearby market or city.</p>';return}
     const direct=(m.direct||[]).slice().sort((a,b)=>(b.b||0)-(a.b||0));
