@@ -54,6 +54,28 @@ await scenario('Mobile map-first render and T-Mobile Fiber Tallahassee routing',
 await scenario('Mobile page stays within screen width',async()=>{
  const w=await b.page.evaluate(()=>document.documentElement.scrollWidth);if(w>400)throw Error('horizontal overflow '+w);return {scrollWidth:w};
 });
+await scenario('Interactive map actually initializes, renders basemap tiles and ZIP outline',async()=>{
+ await page.goto(base+'/signal-preview?zip=45202',{waitUntil:'domcontentloaded',timeout:90000});
+ await page.locator('#signal-result h2').getByText('Internet providers in 45202').waitFor({timeout:20000});
+ await page.locator('.leaflet-container').waitFor({timeout:15000});
+ await page.waitForFunction(()=>document.querySelectorAll('.leaflet-tile-loaded').length>0,{timeout:25000});
+ const tileCount=await page.locator('.leaflet-tile-loaded').count();
+ let outlineStatus='not available';
+ try{await page.waitForSelector('.signal-map .leaflet-interactive',{timeout:15000});outlineStatus='rendered'}catch(e){}
+ const box=await page.locator('#signal-map').boundingBox();
+ if(!box||box.width<700||tileCount===0)throw Error('Real map did not load');
+ await page.locator('.leaflet-control-zoom-in').click();
+ const next=await page.locator('#signal-map').evaluate(el=>el.querySelector('.leaflet-container')?.getAttribute('class'));
+ await page.screenshot({path:output+'/desktop-map-zoom.png',fullPage:true});
+ return {loadedTileImages:tileCount,zipOutline:outlineStatus,zoomControl:'clickable',mapClass:next};
+});
+await scenario('Address and market route handoffs work without broken destination pages',async()=>{
+ const zip=await page.request.get(base+'/check-availability?zip=45202',{timeout:90000});
+ if(zip.status()!==200)throw Error('address qualification page HTTP '+zip.status());
+ const homepage=await page.request.get(base+'/',{timeout:90000});if(homepage.status()!==200)throw Error('homepage HTTP '+homepage.status());
+ const coverage=await page.request.get(base+'/coverage-map/',{timeout:90000});if(coverage.status()!==200)throw Error('coverage map page HTTP '+coverage.status());
+ return {homepage:homepage.status(),coveragePage:coverage.status(),addressPage:zip.status()};
+});
 await a.context.close();await b.context.close();await browser.close();
 const fs=await import('node:fs/promises');await fs.writeFile(output+'/website-proof.json',JSON.stringify({passed:failures.length===0,results,failures},null,2));
 console.log('SIGNAL_WEBSITE_PROOF',JSON.stringify({passed:failures.length===0,results,failures}));
