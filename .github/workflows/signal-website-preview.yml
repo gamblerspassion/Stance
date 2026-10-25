@@ -67,6 +67,11 @@ jobs:
           node signal-site-smoke.mjs
       - name: Generate downloadable self-contained national SIGNAL HTML preview
         run: node signal-web/scripts/create-standalone.mjs
+      - name: Browser-validate the downloadable standalone HTML and all embedded polygons
+        working-directory: web-preview
+        run: |
+          cp ../signal-web/scripts/test-standalone.mjs standalone-smoke.mjs
+          node standalone-smoke.mjs
       - name: Upload website and map proof screenshots
         if: always()
         uses: actions/upload-artifact@v4
